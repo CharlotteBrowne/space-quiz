@@ -148,15 +148,29 @@ const QUESTIONS = [
   ["Who was the first woman in space?", ["Sally Ride", "Valentina Tereshkova", "Mae Jemison", "Peggy Whitson"], 1, "Tereshkova flew on Vostok 6 in 1963."]
 ];
 const $ = id => document.getElementById(id);
-let i, score, locked;
+let i, score, locked, run;
 
+function shuffle(a) {
+  for (let n = a.length - 1; n > 0; n--) {
+    const j = Math.floor(Math.random() * (n + 1));
+    [a[n], a[j]] = [a[j], a[n]];
+  }
+  return a;
+}
+function buildRun() {
+  return shuffle(QUESTIONS.map((_, n) => n)).map(n => {
+    const [q, opts, correct, fact] = QUESTIONS[n];
+    const order = shuffle(opts.map((_, k) => k));
+    return [q, order.map(k => opts[k]), order.indexOf(correct), fact];
+  });
+}
 function start() {
-  i = 0; score = 0;
+  i = 0; score = 0; run = buildRun();
   $("result").hidden = true; $("quiz").hidden = false;
   render();
 }
 function render() {
-  const [q, opts] = QUESTIONS[i];
+  const [q, opts] = run[i];
   locked = false;
   $("count").textContent = `Question ${i + 1} of ${QUESTIONS.length}`;
   $("score").textContent = `Score: ${score}`;
@@ -177,7 +191,7 @@ function render() {
 function answer(idx) {
   if (locked) return;
   locked = true;
-  const [, , correct, fact] = QUESTIONS[i];
+  const [, , correct, fact] = run[i];
   const btns = [...$("opts").children];
   btns.forEach(b => b.disabled = true);
   btns[correct].classList.add("correct");
