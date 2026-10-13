@@ -111,6 +111,7 @@ button.opt::before {
 @keyframes bump { 50% { transform: scale(1.3); color: var(--good) } }
 @keyframes fade { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+.tip { color: var(--muted); font-size: 12px; margin: 12px 0 0; }
 </style>
 </head>
 <body>
@@ -124,6 +125,7 @@ button.opt::before {
     <div class="opts" id="opts"></div>
     <p class="fact" id="fact" aria-live="polite"></p>
     <button class="next" id="next">Next</button>
+    <p class="tip">Tip: press 1–4 or A–D to answer, Enter to continue</p>
   </section>
   <section class="result" id="result" hidden>
     <div class="emoji" id="emoji"></div>
@@ -224,6 +226,19 @@ function finish() {
   $("again").focus();
 }
 $("again").onclick = start;
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.altKey || e.metaKey || e.defaultPrevented) return;
+  if (e.key === "Enter") {
+    // Focused buttons already activate natively on Enter.
+    if (e.target.closest("button")) return;
+    if (!$("result").hidden) start();
+    else if (locked) $("next").click();
+    return;
+  }
+  if ($("quiz").hidden || locked) return;
+  const idx = "1234".indexOf(e.key) >= 0 && e.key.length === 1 ? +e.key - 1 : "abcd".indexOf(e.key.toLowerCase());
+  if (e.key.length === 1 && idx >= 0 && idx < $("opts").children.length) answer(idx);
+});
 start();
 </script>
 </body>
